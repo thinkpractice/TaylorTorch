@@ -1,10 +1,15 @@
+import Foundation
 // swift-tools-version:6.1
 import PackageDescription
 
-// Define constants for paths to avoid repetition
-let swiftToolchainDir =
-    "/Users/pedro/Library/Developer/Toolchains/swift-DEVELOPMENT-SNAPSHOT-2025-10-02-a.xctoolchain/usr"
-let pytorchInstallDir = "/Users/pedro/programming/pytorch/install"
+// From: https://blog.eidinger.info/use-environment-variables-from-env-file-in-a-swift-package
+public var swiftToolchainDir: String {
+    ProcessInfo.processInfo.environment["SWIFT_TOOLCHAIN_DIRECTORY"] ?? ""
+}
+
+public var pytorchInstallDir: String {
+    ProcessInfo.processInfo.environment["PYTORCH_INSTALL_DIR"] ?? ""
+}
 
 // Derived paths
 let swiftLibDir = "\(swiftToolchainDir)/lib/swift"
