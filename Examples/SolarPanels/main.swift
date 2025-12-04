@@ -90,7 +90,28 @@ struct SolarPanelsExample: ParsableCommand {
             throw SolarError.URLNotValidError("Invalid url: \(imageZipUrl)")
         }
 
-        let zippedImages = Data(contentsOf: imageZipUrl)
+        let rootDir = (root ?? DataHome.root).appendingPathComponent(
+            "deepstat-wp5", isDirectory: true)
+        try Downloader.ensureDir(rootDir)
+
+        try ensureFileExists(at: rootDir, remote: imageZipUrl)
+
+    }
+
+    func ensureFileExists(at rawPath: URL, remote: URL) throws {
+        if FileManager.default.fileExists(atPath: rawPath.path) {
+            print("[SolarPanels] Using cached \(rawPath.lastPathComponent)")
+            return
+        }
+        let zipPath = rawPath.appending(path: "DeepStat-WP5-dataset.zip")
+        print("[SolarPanels] Preparing \(rawPath.lastPathComponent)")
+        let zippedFile = try Downloader.fetch(url: remote, to: zipPath)
+        print(
+            "[SolarPanels] Decompressing \(gz.lastPathComponent) → \(rawPath.lastPathComponent)")
+        let data = try FileManager.default.unzipItem(at: zipPath, to: rawPath)
+        let sizeMB = Double(data.count) / 1_048_576.0
+        print(
+            String(format: "[SolarPanels] Wrote %@ (%.1f MB)", rawPath.lastPathComponent, sizeMB))
     }
 
 }
