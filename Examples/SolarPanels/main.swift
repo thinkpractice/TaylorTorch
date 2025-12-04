@@ -1,6 +1,7 @@
 // Dataset Url: https://zenodo.org/records/7233404
 import ArgumentParser
 import Foundation
+import PNG
 import Torch
 import ZIPFoundation
 import _Differentiation
@@ -21,25 +22,6 @@ struct TrainingConfig {
     var shuffleSeed: UInt64 = 0xfeed_cafe
     /// Optional cap on the number of batches processed per epoch (useful for debugging).
     var maxBatchesPerEpoch: Int? = nil
-}
-
-public struct ImageDataset<Element>: Dataset, RandomAccessCollection {
-    public typealias Index = Int
-    public let elements: [Element]
-
-    public init(_ elements: [Element]) {
-        self.elements = elements
-    }
-
-    // Collection
-    public var startIndex: Int { elements.startIndex }
-    public var endIndex: Int { elements.endIndex }
-    public func index(after i: Int) -> Int { elements.index(after: i) }
-    public func index(before i: Int) -> Int { elements.index(before: i) }
-    public subscript(_ index: Int) -> Element { elements[index] }
-
-    // Dataset
-    public var count: Int { elements.count }
 }
 
 extension URL {
@@ -82,9 +64,37 @@ enum SolarError: Error {
     case URLNotValidError(String)
 }
 
+struct ImageReference {
+    let filePath: String
+
+    public let label: Int32  // 0...9
+
+    public init(filePath: String, label: Int32) {
+        self.filePath = filePath
+        self.label = label
+    }
+
+    public var image: Tensor? {
+        guard
+            let image: PNG.Image = try .decompress(path: filePath)
+        else {
+            return nil
+        }
+        let rgba: [PNG.RGBA<UInt8>] = image.unpack(as: PNG.RGBA<UInt8>.self)
+        let size: (columns: Int, rows: Int) = image.size
+
+        let floats: [Float]
+        floats = rgba.map { [$0.r, $0.g, $0.b] }.flatMap { Float($0) / 255.0 }
+
+        let image = Tensor(array: floats, shape: [1, size.rows, size.cols], dtype: .float32)
+
+        return Tensor
+    }
+}
+
 struct SolarPanelData {
-    let train: ImageDataset
-    let test: ImageDataset
+    public let train: ArrayDataset<ImageReference>
+    public let test: ArrayDataset<ImageReference>
 }
 
 func buildVGG16Model() -> Sequential {
