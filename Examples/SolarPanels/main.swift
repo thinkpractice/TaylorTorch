@@ -101,7 +101,7 @@ struct SolarPanelData {
         self.test = test
     }
 
-    static func load(csvUrl: URL) -> SolarPanelData? {
+    static func load(csvUrl: URL, sampleSize: Int = 2000) -> SolarPanelData? {
         return nil
     }
 }
