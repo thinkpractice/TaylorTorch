@@ -249,6 +249,8 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
         .package(url: "https://github.com/tayloraswift/swift-png", from: "4.4.0"),
+        .package(
+            url: "https://github.com/weichsel/ZIPFoundation.git", .upToNextMajor(from: "0.9.0")),
     ],
     targets: {
         var targets: [Target] = [
@@ -317,6 +319,7 @@ let package = Package(
                     "Torch",
                     .product(name: "ArgumentParser", package: "swift-argument-parser"),
                     .product(name: "PNG", package: "swift-png"),
+                    "ZIPFoundation",
                 ],
                 path: "Examples/SolarPanels",
                 swiftSettings: commonSwiftSettings,
