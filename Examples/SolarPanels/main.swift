@@ -1,7 +1,7 @@
 // Dataset Url: https://zenodo.org/records/7233404
 import ArgumentParser
 import Foundation
-import PNG
+//import PNG
 import Torch
 import ZIPFoundation
 import _Differentiation
@@ -62,6 +62,7 @@ extension FileManager {
 
 enum SolarError: Error {
     case URLNotValidError(String)
+    case CSVNotFound(String)
 }
 
 struct ImageReference {
@@ -75,29 +76,37 @@ struct ImageReference {
     }
 
     public var image: Tensor? {
-        guard
+        return nil
+        /*guard
             let image: PNG.Image = try .decompress(path: filePath)
         else {
             return nil
         }
         let rgba: [PNG.RGBA<UInt8>] = image.unpack(as: PNG.RGBA<UInt8>.self)
         let size: (columns: Int, rows: Int) = image.size
-
+        
         let floats: [Float]
         floats = rgba.map { [$0.r, $0.g, $0.b] }.flatMap { Float($0) / 255.0 }
-
-        let image = Tensor(array: floats, shape: [1, size.rows, size.cols], dtype: .float32)
-
-        return Tensor
+        
+        return Tensor(array: floats, shape: [1, size.rows, size.cols], dtype: .float32)*/
     }
 }
 
 struct SolarPanelData {
     public let train: ArrayDataset<ImageReference>
     public let test: ArrayDataset<ImageReference>
+
+    private init(train: ArrayDataset<ImageReference>, test: ArrayDataset<ImageReference>) {
+        self.train = train
+        self.test = test
+    }
+
+    static func load(csvUrl: URL) -> SolarPanelData? {
+        return nil
+    }
 }
 
-func buildVGG16Model() -> Sequential {
+func buildVGG16Model() -> some Layer {
     return Sequential {
         // ── Block 1 ──────────────────────────────────────────────────────────────
         Conv2D(
@@ -128,8 +137,8 @@ func buildVGG16Model() -> Sequential {
 /// Packs a batch of `MNISTExample` samples into dense tensors.
 /// - Parameter batch: Collection of MNIST examples to stack.
 /// - Returns: Tuple containing image tensors (`[batch, 1, 28, 28]`) and integer labels.
-func makeBatch(_ batch: [MNISTExample]) -> (images: Tensor, labels: Tensor) {
-    let images = Tensor.stack(batch.map { $0.image }, dim: 0)
+func makeBatch(_ batch: [ImageReference]) -> (images: Tensor, labels: Tensor) {
+    let images = Tensor.stack(batch.compactMap { $0.image }, dim: 0)
     let labelScalars = batch.map { Int64($0.label) }
     let labels = Tensor(array: labelScalars, shape: [labelScalars.count], dtype: .int64)
     return (images, labels)
@@ -150,7 +159,7 @@ func batchAccuracy(logits: Tensor, labels: Tensor) -> (correct: Int, total: Int)
 
 func evaluate<Model: Layer>(
     _ model: Model,
-    loader: DataLoader<ImageDataset>
+    loader: DataLoader<ArrayDataset<ImageReference>>
 ) -> (loss: Double, accuracy: Double) {
     var totalLoss: Double = 0
     var totalCorrect = 0
@@ -173,7 +182,7 @@ func evaluate<Model: Layer>(
     return (meanLoss, accuracy)
 }
 
-func trainModel(model: Sequential, config: TrainingConfig, data: SolarPanelData) {
+func trainModel<Model: Layer>(model: inout Model, config: TrainingConfig, data: SolarPanelData) {
     let testLoader = DataLoader(
         dataset: data.test,
         batchSize: config.evalBatchSize,
@@ -211,13 +220,14 @@ func trainModel(model: Sequential, config: TrainingConfig, data: SolarPanelData)
             let (images, labels) = makeBatch(batch)
 
             let (lossTensor, pullback) = valueWithPullback(at: model) { current -> Tensor in
-                let logits = current(images)
-                return softmaxCrossEntropy(logits: logits, labels: labels)
+                let logits = current(images as! Model.Input)
+                // TODO: can we get rid of force unwrapping here?
+                return softmaxCrossEntropy(logits: logits as! Tensor, labels: labels)
             }
             let grad = pullback(Tensor(1.0, dtype: .float32))
 
-            let logits = model(images)
-            let (correct, batchTotal) = batchAccuracy(logits: logits, labels: labels)
+            let logits = model(images as! Model.Input)
+            let (correct, batchTotal) = batchAccuracy(logits: logits as! Tensor, labels: labels)
             let lossValue = lossTensor.toArray(as: Float.self)[0]
 
             optimizer.update(&model, along: grad)
@@ -329,7 +339,13 @@ struct SolarPanelsExample: ParsableCommand {
         try ensureFileExists(at: rootDir, remote: imageZipUrl, downloadAgain: download)
 
         var model = buildVGG16Model()
-        trainModel(model: model, config: trainingConfig)
+
+        let csvUrl = rootDir.appendingPathComponent("all_annotations.csv")
+        guard var data = SolarPanelData.load(csvUrl: csvUrl) else {
+            throw SolarError.CSVNotFound(
+                "CSV file: \(csvUrl) for the annotations could not be found")
+        }
+        trainModel(model: &model, config: trainingConfig, data: data)
     }
 
     func ensureFileExists(at rawPath: URL, remote: URL, downloadAgain: Bool) throws {
