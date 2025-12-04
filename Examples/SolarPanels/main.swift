@@ -45,4 +45,16 @@ struct SolarPanelsExample: ParsableCommand {
         help: "Optional cap on the number of batches processed per epoch (useful for debugging")
     var maxBatchesPerEpoch: Int? = nil
 
+    mutating func run() throws {
+        let trainingConfig = TrainingConfig(
+            epochs: epochs,
+            batchSize: batchSize,
+            evalBatchSize: evalBatchSize,
+            logInterval: logInterval,
+            learningRate: learningRate,
+            shuffleSeed: shuffleSeed,
+            maxBatchesPerEpoch: maxBatchesPerEpoch
+        )
+    }
+
 }
