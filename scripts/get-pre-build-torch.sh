@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-DEFAULT_LIB_TORCH_VERSION="libtorch-shared-with-deps-2.8.0"
+DEFAULT_LIB_TORCH_VERSION="2.9.1"
 DEFAULT_OUTPUT_PATH="../pytorch"
 
 LIB_TORCH_VERSION="${LIB_TORCH_VERSION:-$DEFAULT_LIB_TORCH_VERSION}"
@@ -9,8 +9,9 @@ OUTPUT_PATH="${OUTPUT_PATH:-$DEFAULT_OUTPUT_PATH}"
 
 usage() {
   cat <<EOF
-Usage: $0 [--version <libtorch-version>] [--output <path>]
+Usage: $0 [--version <version>] [--output <path>]
 Defaults: version=${DEFAULT_LIB_TORCH_VERSION}, output=${DEFAULT_OUTPUT_PATH}
+The version may be a bare number (e.g., 2.8.0) or a full libtorch package name.
 EOF
 }
 
@@ -44,8 +45,10 @@ if [ -d "${OUTPUT_PATH}" ]; then
   rm -rf "${OUTPUT_PATH}"
 fi
 
-ARCHIVE="${LIB_TORCH_VERSION}+cpu.zip"
-URL="https://download.pytorch.org/libtorch/cpu/${LIB_TORCH_VERSION}%2Bcpu.zip"
+PACKAGE_NAME="libtorch-shared-with-deps-${LIB_TORCH_VERSION}"
+
+ARCHIVE="${PACKAGE_NAME}+cpu.zip"
+URL="https://download.pytorch.org/libtorch/cpu/${PACKAGE_NAME}%2Bcpu.zip"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}" "${ARCHIVE}"' EXIT
 
