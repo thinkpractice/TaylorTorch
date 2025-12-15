@@ -50,8 +50,8 @@ PACKAGE_NAME="libtorch-shared-with-deps-${LIB_TORCH_VERSION}"
 ARCHIVE="${PACKAGE_NAME}+cpu.zip"
 URL="https://download.pytorch.org/libtorch/cpu/${PACKAGE_NAME}%2Bcpu.zip"
 TMP_DIR="$(mktemp -d)"
-trap 'rm -rf "${TMP_DIR}" "${ARCHIVE}"' EXIT
+ARCHIVE_PATH="${TMP_DIR}/${ARCHIVE}"
+trap 'rm -rf "${TMP_DIR}"' EXIT
 
-wget -O "${ARCHIVE}" "${URL}"
-unzip "${ARCHIVE}" -d "${TMP_DIR}"
-mv "${TMP_DIR}/libtorch" "${OUTPUT_PATH}"
+wget -O "${ARCHIVE_PATH}" "${URL}"
+unzip "${ARCHIVE_PATH}" -d "${OUTPUT_PATH}"
