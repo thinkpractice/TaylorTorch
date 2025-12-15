@@ -3,14 +3,16 @@ set -euo pipefail
 
 DEFAULT_LIB_TORCH_VERSION="2.9.1"
 DEFAULT_OUTPUT_PATH="../pytorch"
+DEFAULT_COMPUTE_PLATFORM="cpu"
 
 LIB_TORCH_VERSION="${LIB_TORCH_VERSION:-$DEFAULT_LIB_TORCH_VERSION}"
 OUTPUT_PATH="${OUTPUT_PATH:-$DEFAULT_OUTPUT_PATH}"
+COMPUTE_PLATFORM="${LIB_TORCH_COMPUTE_PLATFORM:-$DEFAULT_COMPUTE_PLATFORM}"
 
 usage() {
   cat <<EOF
-Usage: $0 [--version <version>] [--output <path>]
-Defaults: version=${DEFAULT_LIB_TORCH_VERSION}, output=${DEFAULT_OUTPUT_PATH}
+Usage: $0 [--version <version>] [--output <path>] [--platform <cpu|cu126|cu128|cu130|rocm6.4>]
+Defaults: version=${DEFAULT_LIB_TORCH_VERSION}, output=${DEFAULT_OUTPUT_PATH}, platform=${DEFAULT_COMPUTE_PLATFORM}
 The version may be a bare number (e.g., 2.8.0) or a full libtorch package name.
 EOF
 }
@@ -23,6 +25,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -o|--output)
       OUTPUT_PATH="$2"
+      shift 2
+      ;;
+    -p|--platform|--compute)
+      COMPUTE_PLATFORM="$2"
       shift 2
       ;;
     -h|--help)
@@ -39,19 +45,32 @@ done
 
 export LIB_TORCH_VERSION
 export OUTPUT_PATH
+export LIB_TORCH_COMPUTE_PLATFORM="${COMPUTE_PLATFORM}"
 
 if [ -d "${OUTPUT_PATH}" ]; then
   echo "Removing existing ${OUTPUT_PATH}"
   rm -rf "${OUTPUT_PATH}"
 fi
 
+case "${COMPUTE_PLATFORM}" in
+  cpu|cu126|cu128|cu130|rocm6.4)
+    ;;
+  *)
+    echo "Unsupported compute platform: ${COMPUTE_PLATFORM}"
+    echo "Supported platforms: cpu, cu126, cu128, cu130, rocm6.4"
+    exit 1
+    ;;
+esac
+
 PACKAGE_NAME="libtorch-shared-with-deps-${LIB_TORCH_VERSION}"
 
-ARCHIVE="${PACKAGE_NAME}+cpu.zip"
-URL="https://download.pytorch.org/libtorch/cpu/${PACKAGE_NAME}%2Bcpu.zip"
+ARCHIVE="${PACKAGE_NAME}+${COMPUTE_PLATFORM}.zip"
+URL="https://download.pytorch.org/libtorch/${COMPUTE_PLATFORM}/${PACKAGE_NAME}%2B${COMPUTE_PLATFORM}.zip"
+
 TMP_DIR="$(mktemp -d)"
 ARCHIVE_PATH="${TMP_DIR}/${ARCHIVE}"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
+# Download archive into tmp directory and unzip it
 wget -O "${ARCHIVE_PATH}" "${URL}"
 unzip "${ARCHIVE_PATH}" -d "${OUTPUT_PATH}"
