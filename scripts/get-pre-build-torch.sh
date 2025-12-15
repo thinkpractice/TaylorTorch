@@ -62,9 +62,9 @@ export LIB_TORCH_VERSION
 export OUTPUT_PATH
 export LIB_TORCH_COMPUTE_PLATFORM="${COMPUTE_PLATFORM}"
 
-if [ -d "${OUTPUT_PATH}" ]; then
-  echo "Removing existing ${OUTPUT_PATH}"
-  rm -rf "${OUTPUT_PATH}"
+if [ -d "${OUTPUT_PATH}/libtorch" ]; then
+  echo "Removing existing ${OUTPUT_PATH}/libtorch"
+  rm -rf "${OUTPUT_PATH}/libtorch"
 fi
 
 case "${COMPUTE_PLATFORM}" in
