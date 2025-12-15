@@ -5,14 +5,29 @@ DEFAULT_LIB_TORCH_VERSION="2.9.1"
 DEFAULT_OUTPUT_PATH="../pytorch"
 DEFAULT_COMPUTE_PLATFORM="cpu"
 
+detect_default_platform() {
+  case "$(uname -s)" in
+    Darwin)
+      # Default to macOS arm64 build when running on macOS.
+      echo "macos-arm64"
+      ;;
+    *)
+      echo "${DEFAULT_COMPUTE_PLATFORM}"
+      ;;
+  esac
+}
+
+# Detect the platform automatically
+DETECTED_PLATFORM="$(detect_default_platform)"
+
 LIB_TORCH_VERSION="${LIB_TORCH_VERSION:-$DEFAULT_LIB_TORCH_VERSION}"
 OUTPUT_PATH="${OUTPUT_PATH:-$DEFAULT_OUTPUT_PATH}"
-COMPUTE_PLATFORM="${LIB_TORCH_COMPUTE_PLATFORM:-$DEFAULT_COMPUTE_PLATFORM}"
+COMPUTE_PLATFORM="${LIB_TORCH_COMPUTE_PLATFORM:-$DETECTED_PLATFORM}"
 
 usage() {
   cat <<EOF
 Usage: $0 [--version <version>] [--output <path>] [--platform <cpu|cu126|cu128|cu130|rocm6.4|macos-arm64>]
-Defaults: version=${DEFAULT_LIB_TORCH_VERSION}, output=${DEFAULT_OUTPUT_PATH}, platform=${DEFAULT_COMPUTE_PLATFORM}
+Defaults: version=${DEFAULT_LIB_TORCH_VERSION}, output=${DEFAULT_OUTPUT_PATH}, platform=${DETECTED_PLATFORM} (auto-detects macOS arm64)
 The version may be a bare number (e.g., 2.8.0) or a full libtorch package name.
 EOF
 }
