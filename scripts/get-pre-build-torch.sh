@@ -11,7 +11,7 @@ COMPUTE_PLATFORM="${LIB_TORCH_COMPUTE_PLATFORM:-$DEFAULT_COMPUTE_PLATFORM}"
 
 usage() {
   cat <<EOF
-Usage: $0 [--version <version>] [--output <path>] [--platform <cpu|cu126|cu128|cu130|rocm6.4>]
+Usage: $0 [--version <version>] [--output <path>] [--platform <cpu|cu126|cu128|cu130|rocm6.4|macos-arm64>]
 Defaults: version=${DEFAULT_LIB_TORCH_VERSION}, output=${DEFAULT_OUTPUT_PATH}, platform=${DEFAULT_COMPUTE_PLATFORM}
 The version may be a bare number (e.g., 2.8.0) or a full libtorch package name.
 EOF
@@ -53,19 +53,32 @@ if [ -d "${OUTPUT_PATH}" ]; then
 fi
 
 case "${COMPUTE_PLATFORM}" in
-  cpu|cu126|cu128|cu130|rocm6.4)
+  cpu|cu126|cu128|cu130|rocm6.4|macos-arm64)
     ;;
   *)
     echo "Unsupported compute platform: ${COMPUTE_PLATFORM}"
-    echo "Supported platforms: cpu, cu126, cu128, cu130, rocm6.4"
+    echo "Supported platforms: cpu, cu126, cu128, cu130, rocm6.4, macos-arm64"
     exit 1
     ;;
 esac
 
-PACKAGE_NAME="libtorch-shared-with-deps-${LIB_TORCH_VERSION}"
+if [[ "${LIB_TORCH_VERSION}" == libtorch-* ]]; then
+  PACKAGE_NAME="${LIB_TORCH_VERSION}"
+else
+  if [[ "${COMPUTE_PLATFORM}" == "macos-arm64" ]]; then
+    PACKAGE_NAME="libtorch-macos-arm64-${LIB_TORCH_VERSION}"
+  else
+    PACKAGE_NAME="libtorch-shared-with-deps-${LIB_TORCH_VERSION}"
+  fi
+fi
 
-ARCHIVE="${PACKAGE_NAME}+${COMPUTE_PLATFORM}.zip"
-URL="https://download.pytorch.org/libtorch/${COMPUTE_PLATFORM}/${PACKAGE_NAME}%2B${COMPUTE_PLATFORM}.zip"
+if [[ "${COMPUTE_PLATFORM}" == "macos-arm64" ]]; then
+  ARCHIVE="${PACKAGE_NAME}.zip"
+  URL="https://download.pytorch.org/libtorch/cpu/${PACKAGE_NAME}.zip"
+else
+  ARCHIVE="${PACKAGE_NAME}+${COMPUTE_PLATFORM}.zip"
+  URL="https://download.pytorch.org/libtorch/${COMPUTE_PLATFORM}/${PACKAGE_NAME}%2B${COMPUTE_PLATFORM}.zip"
+fi
 
 TMP_DIR="$(mktemp -d)"
 ARCHIVE_PATH="${TMP_DIR}/${ARCHIVE}"
