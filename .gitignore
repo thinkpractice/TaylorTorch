@@ -14,4 +14,4 @@ DerivedData/
 .cache/
 .claude
 docs/
-pytorch/
+libtorch/
