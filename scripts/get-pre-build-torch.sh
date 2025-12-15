@@ -2,7 +2,7 @@
 set -euo pipefail
 
 DEFAULT_LIB_TORCH_VERSION="2.9.1"
-DEFAULT_OUTPUT_PATH="../pytorch"
+DEFAULT_OUTPUT_PATH=".."
 DEFAULT_COMPUTE_PLATFORM="cpu"
 
 detect_default_platform() {
