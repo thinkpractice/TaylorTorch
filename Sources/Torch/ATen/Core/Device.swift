@@ -7,6 +7,8 @@ public enum Device: Sendable, Hashable, Codable {
   case cpu
   /// NVIDIA CUDA device with the provided device index.
   case cuda(Int8)
+  /// AMD HIP/ROCm devices
+  case hip(Int8)
   /// Apple Metal Performance Shaders device.
   case mps
 }
@@ -20,6 +22,8 @@ extension Device {
       return make_device(c10.DeviceType.CPU)
     case .cuda(let idx):
       return make_device(c10.DeviceType.CUDA, idx)
+    case .hip(let idx):
+      return make_device(c10.DeviceType.HIP, idx)
     case .mps:
       return make_device(c10.DeviceType.MPS)
     }

@@ -7,20 +7,21 @@ public enum TensorError: Error, Sendable {
   case deviceUnavailable(Device)
 }
 
-public extension Tensor {
+extension Tensor {
   /// Returns `true` when the runtime can materialize tensors on the given `device`.
-  static func isAvailable(_ device: Device) -> Bool {
+  public static func isAvailable(_ device: Device) -> Bool {
     switch device {
     case .cpu: return true
     case .cuda: return TTSTensor.hasCUDA()
-    case .mps:  return TTSTensor.hasMPS()
+    case .hip: return TTSTensor.hasHIP()
+    case .mps: return TTSTensor.hasMPS()
     }
   }
 
   /// Performs a device-to-device copy on a background queue, optionally using a
   /// non-blocking transfer, and surfaces an error when the destination `device`
   /// is not available.
-  func moved(to device: Device, nonBlocking: Bool = true) async throws -> Tensor {
+  public func moved(to device: Device, nonBlocking: Bool = true) async throws -> Tensor {
     guard Tensor.isAvailable(device) else { throw TensorError.deviceUnavailable(device) }
     return await withCheckedContinuation { cont in
       DispatchQueue.global().async {

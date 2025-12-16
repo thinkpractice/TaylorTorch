@@ -1242,6 +1242,7 @@ public:
 
   // ---- Device queries and non-blocking toDevice
   static bool hasCUDA() { return at::hasCUDA(); }
+  static bool hasHIP() { return at::hasHIP(); }
   static bool hasMPS() { return at::hasMPS(); }
 
   // toDevice with non_blocking option
