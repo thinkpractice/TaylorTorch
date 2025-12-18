@@ -258,7 +258,7 @@ let package = Package(
                 name: "ATenCXX",
                 url:
                     "https://github.com/thinkpractice/TaylorTorchBinaryPackage/releases/download/v0.2.0/ATenCXX.artifactbundle.zip",
-                checksum: "39294600f03cc71035954d2d4d04f05a29511e66c2b248897cb3e9df53cbb4af"
+                checksum: "fe35d0a24064f7a7f8f7b76dc5bfb6e315e43f22b24b89ea81dd868afafdeb27"
             )
         ]
 
