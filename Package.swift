@@ -89,15 +89,15 @@ if let cStandardLibraryModuleMap {
 
 // On Linux, configure Swift to use libstdc++ properly
 #if os(Linux)
-commonSwiftSettings += [
-    // Add libstdc++ include paths before Swift's clang includes
-    .unsafeFlags(["-Xcc", "-isystem/usr/include/c++/13"]),
-    .unsafeFlags(["-Xcc", "-isystem/usr/include/x86_64-linux-gnu/c++/13"]),
-    .unsafeFlags(["-Xcc", "-isystem/usr/include/c++/13/backward"]),
-    .unsafeFlags(["-Xcc", "-isystem/usr/lib/gcc/x86_64-linux-gnu/13/include"]),
-    .unsafeFlags(["-Xcc", "-isystem/usr/include"]),
-    .unsafeFlags(["-Xcc", "-isystem/usr/include/x86_64-linux-gnu"]),
-]
+    commonSwiftSettings += [
+        // Add libstdc++ include paths before Swift's clang includes
+        .unsafeFlags(["-Xcc", "-isystem/usr/include/c++/13"]),
+        .unsafeFlags(["-Xcc", "-isystem/usr/include/x86_64-linux-gnu/c++/13"]),
+        .unsafeFlags(["-Xcc", "-isystem/usr/include/c++/13/backward"]),
+        .unsafeFlags(["-Xcc", "-isystem/usr/lib/gcc/x86_64-linux-gnu/13/include"]),
+        .unsafeFlags(["-Xcc", "-isystem/usr/include"]),
+        .unsafeFlags(["-Xcc", "-isystem/usr/include/x86_64-linux-gnu"]),
+    ]
 #endif
 
 // On Linux, use --whole-archive to force inclusion of all PyTorch operator symbols
@@ -247,20 +247,23 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"),
-        .package(url: "https://github.com/differentiable-swift/swift-numerics-differentiable", from: "1.3.0"),
+        .package(
+            url: "https://github.com/differentiable-swift/swift-numerics-differentiable",
+            from: "1.3.0"),
     ],
     targets: {
         var targets: [Target] = [
             // ----------------- C++ Targets -----------------
             .binaryTarget(
                 name: "ATenCXX",
-                url: "https://github.com/thinkpractice/TaylorTorchBinaryPackage/releases/download/v0.1.0/ATenCXX.artifactbundle.zip",
+                url:
+                    "https://github.com/thinkpractice/TaylorTorchBinaryPackage/releases/download/v0.1.0/ATenCXX.artifactbundle.zip",
                 checksum: "dcb44fa84ba6dd34ed9b88c991f0806e87649c1f8ea974c2bef6663e0d6f381a"
-            ),
+            )
         ]
 
-        // ATenCXXDoctests 
-        
+        // ATenCXXDoctests
+
         targets.append(
             .executableTarget(
                 name: "ATenCXXDoctests",
@@ -270,70 +273,73 @@ let package = Package(
                 linkerSettings: atenDoctestsLinkerSettings
             )
         )
-        
 
         // ----------------- Swift Targets -----------------
         targets += [
-        .target(
-            name: "Torch",
-            dependencies: [
-                "ATenCXX",
-                .product(name: "RealModuleDifferentiable", package: "swift-numerics-differentiable"),
-            ],
-            exclude: [
-                "readme.md", "ATen/readme.md", "ATen/Core/Tensor/readme.md", "Core/readme.md",
-                "Optimizers/readme.md", "Modules/readme.md",
-                "Modules/Context/readme.md", "Modules/Layers/readme.md", "Modules/Graph/readme.md",
-                "Data/README.md",
-            ],
-            swiftSettings: commonSwiftSettings,
-            linkerSettings: allLinkerSettings
-        ),
+            .target(
+                name: "Torch",
+                dependencies: [
+                    "ATenCXX",
+                    .product(
+                        name: "RealModuleDifferentiable", package: "swift-numerics-differentiable"),
+                ],
+                exclude: [
+                    "readme.md", "ATen/readme.md", "ATen/Core/Tensor/readme.md", "Core/readme.md",
+                    "Optimizers/readme.md", "Modules/readme.md",
+                    "Modules/Context/readme.md", "Modules/Layers/readme.md",
+                    "Modules/Graph/readme.md",
+                    "Data/README.md",
+                ],
+                swiftSettings: commonSwiftSettings,
+                linkerSettings: allLinkerSettings
+            ),
 
-        // ----------------- Example Targets -----------------
-        .executableTarget(
-            name: "MNISTExample",
-            dependencies: ["Torch"],
-            path: "Examples/MNIST",
-            swiftSettings: commonSwiftSettings,
-            linkerSettings: allLinkerSettings
-        ),
-        .executableTarget(
-            name: "ANKIExample",
-            dependencies: ["Torch"],
-            path: "Examples/ANKI",
-            swiftSettings: commonSwiftSettings,
-            linkerSettings: allLinkerSettings
-        ),
-        .executableTarget(
-            name: "KARATEExample",
-            dependencies: ["Torch"],
-            path: "Examples/KARATE",
-            swiftSettings: commonSwiftSettings,
-            linkerSettings: allLinkerSettings
-        ),
+            // ----------------- Example Targets -----------------
+            .executableTarget(
+                name: "MNISTExample",
+                dependencies: ["Torch"],
+                path: "Examples/MNIST",
+                swiftSettings: commonSwiftSettings,
+                linkerSettings: allLinkerSettings
+            ),
+            .executableTarget(
+                name: "ANKIExample",
+                dependencies: ["Torch"],
+                path: "Examples/ANKI",
+                swiftSettings: commonSwiftSettings,
+                linkerSettings: allLinkerSettings
+            ),
+            .executableTarget(
+                name: "KARATEExample",
+                dependencies: ["Torch"],
+                path: "Examples/KARATE",
+                swiftSettings: commonSwiftSettings,
+                linkerSettings: allLinkerSettings
+            ),
 
-        // ----------------- Test Targets -----------------
-        .testTarget(
-            name: "TensorTests",
-            dependencies: [
-                "Torch",
-                .product(name: "RealModuleDifferentiable", package: "swift-numerics-differentiable"),
-            ],
-            path: "Tests/TensorTests",
-            swiftSettings: commonSwiftSettings,
-            linkerSettings: allLinkerSettings
-        ),
-        .testTarget(
-            name: "TorchTests",
-            dependencies: [
-                "Torch",
-                .product(name: "RealModuleDifferentiable", package: "swift-numerics-differentiable"),
-            ],
-            path: "Tests/TorchTests",
-            swiftSettings: commonSwiftSettings,
-            linkerSettings: allLinkerSettings
-        ),
+            // ----------------- Test Targets -----------------
+            .testTarget(
+                name: "TensorTests",
+                dependencies: [
+                    "Torch",
+                    .product(
+                        name: "RealModuleDifferentiable", package: "swift-numerics-differentiable"),
+                ],
+                path: "Tests/TensorTests",
+                swiftSettings: commonSwiftSettings,
+                linkerSettings: allLinkerSettings
+            ),
+            .testTarget(
+                name: "TorchTests",
+                dependencies: [
+                    "Torch",
+                    .product(
+                        name: "RealModuleDifferentiable", package: "swift-numerics-differentiable"),
+                ],
+                path: "Tests/TorchTests",
+                swiftSettings: commonSwiftSettings,
+                linkerSettings: allLinkerSettings
+            ),
         ]
 
         return targets
