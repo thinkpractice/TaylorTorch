@@ -257,8 +257,8 @@ let package = Package(
             .binaryTarget(
                 name: "ATenCXX",
                 url:
-                    "https://github.com/thinkpractice/TaylorTorchBinaryPackage/releases/download/v0.1.0/ATenCXX.artifactbundle.zip",
-                checksum: "a2a2e6e1c8666b3814ccd372f9798d7354466a455cadec93c537695592b34f19"
+                    "https://github.com/thinkpractice/TaylorTorchBinaryPackage/releases/download/v0.2.0/ATenCXX.artifactbundle.zip",
+                checksum: "43bea8dc38b55f48a8205f8a061439c3be1679f6dcccd88b8b1aea7470ac74c8"
             )
         ]
 
