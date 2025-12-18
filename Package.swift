@@ -252,11 +252,10 @@ let package = Package(
     targets: {
         var targets: [Target] = [
             // ----------------- C++ Targets -----------------
-            .target(
+            .binaryTarget(
                 name: "ATenCXX",
-                path: "Sources/ATenCXX",
-                publicHeadersPath: "include",
-                cxxSettings: allAtenCxxSettings
+                url: "https://github.com/thinkpractice/TaylorTorchBinaryPackage/releases/download/v0.1.0/ATenCXX.artifactbundle.zip",
+                checksum: "dcb44fa84ba6dd34ed9b88c991f0806e87649c1f8ea974c2bef6663e0d6f381a"
             ),
         ]
 
