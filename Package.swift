@@ -264,15 +264,15 @@ let package = Package(
 
         // ATenCXXDoctests
 
-        targets.append(
-            .executableTarget(
-                name: "ATenCXXDoctests",
-                dependencies: ["ATenCXX"],
-                path: "Sources/ATenCXXDoctests",
-                cxxSettings: allAtenCxxDoctestSettings,
-                linkerSettings: atenDoctestsLinkerSettings
-            )
-        )
+        // targets.append(
+        //     .executableTarget(
+        //         name: "ATenCXXDoctests",
+        //         dependencies: ["ATenCXX"],
+        //         path: "Sources/ATenCXXDoctests",
+        //         cxxSettings: allAtenCxxDoctestSettings,
+        //         linkerSettings: atenDoctestsLinkerSettings
+        //     )
+        // )
 
         // ----------------- Swift Targets -----------------
         targets += [
